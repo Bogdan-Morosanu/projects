@@ -1,0 +1,2 @@
+javadoc -private ../src/board/*.java ../src/controller/*.java ../src/pieces/*.java ../src/views/*.java
+

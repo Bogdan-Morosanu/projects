@@ -1,0 +1,11 @@
+# let us now test division and multiplication
+
+poli1 = [ 0 1 ] 
+poli2 = [ 1 1 ]
+#poli1 * poli2
+#toDivide = _ 		# since our expressions are strictly binary, we must capture
+			# result via chaining
+#toDivide / poli1
+#_ - poli2 		  # notice result is 0, our division result is equal to p2
+
+#toDivide % p2     # notice result is 0, p2 divides its product with p1

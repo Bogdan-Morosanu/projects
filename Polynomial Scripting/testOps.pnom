@@ -1,0 +1,14 @@
+p = [1 1 1]     # start polynomial
+q = p.deriv	# get derivative of p
+z = q.integr   	# get integral of q
+p - z		# test difference 
+# notice only a constant factor misses due to integration
+# let us add it back
+z + _		# the underscore is a placeHolder for the difference
+z + [ 1 ]       # we can get the same result without the underscore by adding a constant
+p - _		#notice the subtraction yields 0, p is equal to z + [1]
+# let us now test division and multiplication
+[ 0 1 ]  * [ 1 1 ]	# since our expressions are strictly binary, 
+prod = _		# we must capture result via chaining
+prod / [ 0 1 ]
+prod % [ 0 1 ]     # notice result is 0, p2 divides its product with p1

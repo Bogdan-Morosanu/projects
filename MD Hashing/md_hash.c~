@@ -1,0 +1,129 @@
+/** 
+	Arbitrary input Hash Function implementation for Hash tables
+	
+	our hash output is on 16 bits, using a compression function
+	based on the standard C rand() function. It chains the compression
+	function using a Merkle-Damgrad Construct.
+	
+	because it uses rand() as an underlying block cipher
+	(and also because of the small hashing  space), 
+	this hash is not usable for security purposes.
+	It is however, close to a uniformly distributed random variable,
+	and thus useful for a hash table.
+	
+	more specifically, since our hashing space is 16bits
+	we have 65536 distinct hash values. If our hash table has memory
+	for 65536 pointers (512kB on 64 bit arhitectures) we ca hash
+	about 300 different values extremely rapidly (birthday paradox).
+	i.e. after 300 different hashes collision probability exceeds 50%.
+
+	Notes for further modifying:
+		sizeof(block_t) must be a multiple of sizeof(hash_t)
+
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <limits.h>
+#include <stdint.h>
+
+
+#define IV 0
+#define DEBUG 0
+
+
+typedef uint16_t hash_t;
+typedef uint32_t block_t;
+
+struct htable {
+  struct list **entries;
+};
+
+
+hash_t md_hash(void*, size_t);
+
+void put(void *elem, size_t sz );
+void* get(
+
+int main (int argc, char** argv) {
+
+  return 0;
+}
+
+/**
+ * xors block with rand() function to obtain a uniform output distribution
+ * of bits. implementation relies on outside seeding of the rand function
+ * and this is done in the compression function -the only user of xor_with_rand.
+ * implementation probably would have been clearer using char* rather than
+ * unsinged* but we choose a middle ground between clarity and speed.
+ */
+static inline void xor_with_rand (block_t block) {
+  int repeat = sizeof(block_t) / sizeof(unsigned); // actual times we must xor
+  unsigned *bptr = (unsigned*) block;  // iterator
+ 
+  while( --repeat > 0 ) {
+    *bptr++ ^= (unsigned)rand();
+  }
+}
+
+/**
+ * our compression function takes a message block
+ * and hashes it using the already existing chaining
+ * variable h	
+ */
+static void compresssion_fn(block_t block, hash_t *hash) {	
+  xor_with_rand(&block); // scramble the block before chaining	
+
+  int repeat = sizeof(block_t) / sizeof(hash_t); // actual times we must xor
+  hash_t *iter = (hash_t*)&block; // iterator over the block
+
+  while( --repeat > 0 ) {
+    *hash ^= *iter++; // cumulate into the existing hash
+  }
+}
+
+hash_t md_hash(void *addr, size_t sz) {
+  hash_t hash = IV;   //Initialising hash with IV
+	
+  /* first we shall deal with the prefix of our
+   * message that is a multiple of the block size
+   */
+  unsigned long long repeat = sz/sizeof(block_t);
+  block_t *block_iter = (block_t*)addr;
+  
+  // we now chain the compression function over all
+  // complete blocks of the message, reducing them in the hash
+  while( --repeat > 0 ) {
+    compression_fn( *block_iter++, &hash ); 
+  }
+  
+  // we must now padd the remaining bits of the message
+  // to create a valid block
+  int left_out = sz % sizeof(block_t);
+
+  if(left_out > 0) {
+    // notice our block iterator points to the last,
+    // incomplete block of our message, no need to recompute the value
+
+    block_t pad = 0;
+    memcpy( &pad, block_iter, left_out );
+    
+    // now we must set the end marker pad of 10...00.
+    // since left_out points to the first char of this pad
+    // we need only memset the MSB
+    memset( &pad + left_out, 0x80, 1 );
+    compression_fn( pad, &hash );
+  }
+
+	
+  //If our message length is a multiple of the blocksize and
+  //it ends with a "100...00" we have a collision for this message
+  //and the one containing the same bitpattern but without the
+  //"100...00" at the end. It is still probably faster to rehash
+  //these special cases rather than append a control pad to each
+  //hashed value. 
+  return hash;
+}
+
