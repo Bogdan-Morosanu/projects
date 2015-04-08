@@ -110,12 +110,12 @@ int main (int argc, char** argv) {
  * implementation probably would have been clearer using char* rather than
  * unsinged* but we choose a middle ground between clarity and speed.
  */
-static inline void xor_with_rand (block_t *block) {
+static inline void xor_with_rand (block_t *block, unsigned int *seed) {
   int repeat = sizeof(block_t) / sizeof(unsigned); // actual times we must xor
   unsigned *bptr = (unsigned*) block;  // iterator
  
   while( repeat-- > 0 ) {
-    *bptr++ ^= (unsigned)rand();
+    *bptr++ ^= (unsigned)rand_r(seed);
   }
 }
 
@@ -125,7 +125,8 @@ static inline void xor_with_rand (block_t *block) {
  * variable h	
  */
 static void compression_fn(block_t block, hash_t *hash) {	
-  xor_with_rand(&block); // scramble the block before chaining	
+  unsigned int seed = (unsigned)*hash;
+  xor_with_rand(&block, &seed); // scramble the block before chaining	
 
   int repeat = sizeof(block_t) / sizeof(hash_t); // actual times we must xor
   hash_t *iter = (hash_t*)&block; // iterator over the block
