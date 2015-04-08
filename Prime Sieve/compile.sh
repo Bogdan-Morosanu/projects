@@ -42,3 +42,5 @@ echo "now compiling optimised version of code..."
 
 rm sieve
 gcc -DTHREADS=$winner $GCC_FLAGS sieve.c $GCC_LIBS -o sieve
+
+exit
