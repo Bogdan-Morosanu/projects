@@ -2,6 +2,7 @@
 #define OVERLOADS_HPP
 
 #include <cblas.h>
+#include <iostream>
 
 namespace afl {
 	namespace intern {
@@ -19,7 +20,7 @@ namespace afl {
 				const int lda, const double *B, const int ldb,
 				const double beta, double *C, const int ldc)
 		{
-			cblas_dgemm(layout, TransA, TransB, M, N, K,
+		    cblas_dgemm(layout, TransA, TransB, M, N, K,
 					alpha, A, lda, B, ldb, beta, C, ldc);
 		}
 

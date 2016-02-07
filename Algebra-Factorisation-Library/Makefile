@@ -8,4 +8,4 @@ clean:
 	rm afl
 
 afl: $(sources) $(headers)
-	g++ -std=c++11 -Wall $(headers) $(sources) $(libs) -o "bin/afl"
+	g++ -std=c++14 -Wall $(headers) $(sources) $(libs) -o "bin/afl"

@@ -6,6 +6,7 @@
  */
 
 #include <cblas.h>
+#include <functional>
 #include <utility>
 #include <array>
 
@@ -21,13 +22,44 @@ namespace afl {
 	Mat<ElType, dim, dim>
 	eye();
 
-	/// TODO transform into iterator and make min, min_abs
-	/// max, and max_abs to work with iterators such that we can
-	/// easily index ROIs within matrices.
-	///
-	/// @brief enum class controlling the behaviour
-	/// of different cumulating member functions of afl::Mat
-	enum class IterationDir { ROWS, COLS };
+    /// TODO transform into iterator and make min, min_abs
+    /// max, and max_abs to work with iterators such that we can
+    /// easily index ROIs within matrices.
+    ///
+    /// @brief enum class controlling the behaviour
+    /// of different cumulating member functions of afl::Mat
+    enum class IterationDir { ROWS, COLS };
+
+	/// @brief reduces matrix using function object passed in.
+	/// iteration starts from (0,0) and progresses first along the
+    /// direction passed in via the dir parameter (i.e. if
+    /// dir == IterationDir::COLS then the next element after
+    /// (0,0) will be (0,1) ).
+	template <typename SeedType,
+	          typename ElType,
+	          int rows, int cols>
+	inline SeedType
+	reduce_with(std::function<SeedType(SeedType, ElType)> reducer,
+	            const Mat<ElType, rows, cols>& mat,
+	            SeedType seed = SeedType(0),
+	            IterationDir dir = IterationDir::COLS);
+
+	/// @brief this is a compile time version of,
+	/// the more general reduce_with, for when we know the
+	/// static address of the function being passed to.
+	/// TODO test if local lambdas (who do not get instantiated
+	/// with this template) are also inlined.
+    template <typename SeedType,
+              typename ElType,
+              int rows, int cols,
+              SeedType(*reducer)(SeedType, ElType)>
+    inline SeedType
+    reduce_with(const Mat<ElType, rows, cols>& mat,
+                SeedType seed = SeedType(0));
+
+
+	/// @brief class determining type of system to solve.
+	enum class EqSysType { UPPER_TRIANG, LOWER_TRIANG, GENERAL };
 
 	/// @brief core Matrix class for linear algebra operations,
 	/// class has non-virtual dtor, so do not inherit from it.
@@ -81,12 +113,6 @@ namespace afl {
 		operator - (const Mat<FnElType, r, n>& lhs,
 					const Mat<FnElType, n, c>& rhs);
 
-//  TODO find out why this does not link.
-//		template <int n>
-//		inline friend Mat<ElType, rows, cols>
-//		operator * (const Mat<ElType, rows, n>& lhs,
-//					const Mat<ElType, n, cols>& rhs);
-
 		/// @brief accumulator type multiplication, modifies this in-place.
 		inline Mat&
 		operator *= (const Mat<ElType, cols, rows>& rhs);
@@ -98,11 +124,6 @@ namespace afl {
 		/// @brief accumulator type substitution, modifies this in-place.
 		inline Mat&
 		operator -= (const Mat<ElType, rows, cols>& rhs);
-
-		/// @brief performs L-U-P decomposition of this.
-		/// @return success status (fails if matrix is singular).
-		bool
-		lup_decomp(Mat& l, Mat& u, Mat& p) const;
 
 		/// @brief returns a pair of (element, index) that
 		/// are the minimum on selected column or row.
@@ -149,9 +170,71 @@ namespace afl {
 		transp() const;
 
 		/// @brief returns matrix inverse.
-		Mat inv() const;
+		bool
+		inv(Mat& inverse) const;
 
-	private:
+
+        /// @brief performs L-U-P decomposition of this.
+        /// @return success status (fails if matrix is singular).
+        bool
+        lup_decomp(Mat& l, Mat& u, Mat& p) const;
+
+		/// @brief tries to solve for equation
+		///  (*this) * sol == rhs.
+		/// @param rhs right hand side of equation
+		/// @param sol solution, output variable
+		/// @param type determine if system is triangular or general
+		/// @return success status.
+		inline bool
+		solve(const Mat<ElType, rows, 1>& rhs,
+		      Mat<ElType, rows, 1>& sol,
+		      EqSysType type = EqSysType::GENERAL) const;
+
+        /// @brief if lup decomposition is already known, system can
+		/// be solved more efficiently. this can be helpful if you
+		/// have to solve for many equations of the form
+        ///  (*this) * sol == rhs.
+		/// as you can precompute lup decomposition and then save time
+		/// on subsequent calls.
+		///
+		/// @invariant p * (*this) == l * u;
+        /// @param rhs right hand side of equation
+        /// @param l lower triangular matrix
+		/// @param u upper traingular matrix
+		/// @param p permutation matrix
+		/// @param sol solution, output variable
+        /// @return success status.
+		inline bool
+		solve_from_lup(const Mat<ElType, rows, 1>& rhs,
+		               const Mat& l, const Mat& u, const Mat& p,
+		               Mat<ElType, rows, 1>& sol) const;
+
+		/// @brief returns sum of squares of elements.
+		inline ElType
+		l2_norm() const;
+
+		/// @brief return sum of elements.
+		inline ElType
+		l1_norm() const;
+
+		/// @brief returns max element.
+		inline ElType
+		linf_norm() const;
+
+private:
+		/// solves general systems of equations
+		inline bool
+		solve_general(const Mat<ElType, rows, 1>& rhs,
+		              Mat<ElType, rows, 1>& sol) const;
+
+		/// solves upper triangular systems of equations
+		bool back_subst(const Mat<ElType, rows, 1>& rhs,
+						Mat<ElType, rows, 1>& sol) const;
+
+		/// solves lower triangular systems of equations
+		bool fwd_subst(const Mat<ElType, rows, 1>& rhs,
+						Mat<ElType, rows, 1>& sol) const;
+
 		/// col-major storage
 		ElType buf[cols][rows];
 	};
