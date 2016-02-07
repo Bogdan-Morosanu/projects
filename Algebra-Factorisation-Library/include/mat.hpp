@@ -6,21 +6,38 @@
  */
 
 #include <cblas.h>
+#include <array>
+
 #include <functional>
 #include <utility>
-#include <array>
+
+#include <type_traits>
 
 #ifndef MAT_HPP_
 #define MAT_HPP_
 
 namespace afl {
+
 	template <typename ElType, int rows, int cols>
 	class Mat;
+
+	template <typename ElType, int cols>
+	using ColVect = Mat<ElType, 1, cols>;
 
 	/// @brief factory function, returns Identity matrix
 	template <typename ElType, int dim>
 	Mat<ElType, dim, dim>
 	eye();
+
+    /// @brief factory function, returns permutation matrix
+    /// that will permute the rows of another matrix when
+    /// multiplied.
+    /// trick: visualise afl::permutation as the permuted eye()
+    /// and generating one will become very easy.
+    /// (because permutation * eye == permutation).
+    template <typename ElType, int dim>
+    Mat<ElType, dim, dim>
+    permutation(const std::array<int, dim>& p);
 
     /// TODO transform into iterator and make min, min_abs
     /// max, and max_abs to work with iterators such that we can
@@ -78,6 +95,23 @@ namespace afl {
 		/// @brief non-virtual dtor. class not meant to be inherited from!
 		~Mat() {};
 
+		/// @brief access based on single index, const version.
+		/// proceeds alog matrix by first iteration along direction
+		/// specified in iteration dir enum. (i.e. if dir == IterationDir::COLS
+		/// then if index is 1, function will try to index elem (0, 1), otherwise
+		/// (1, 0) ).
+		inline ElType
+		operator() (int idx, IterationDir dir = IterationDir::COLS) const;
+
+
+        /// @brief access based on single index, non-const version.
+        /// proceeds alog matrix by first iteration along direction
+        /// specified in iteration dir enum. (i.e. if dir == IterationDir::COLS
+        /// then if index is 1, function will try to index elem (0, 1), otherwise
+        /// (1, 0) ).
+		inline ElType&
+		operator() (int idx, IterationDir dir = IterationDir::COLS);
+
 		/// access constant marix.
 		inline ElType
 		operator()(int row, int col) const;
@@ -124,6 +158,15 @@ namespace afl {
 		/// @brief accumulator type substitution, modifies this in-place.
 		inline Mat&
 		operator -= (const Mat<ElType, rows, cols>& rhs);
+
+		/// @brief performs element-wise multiplication of matrices.
+		inline Mat
+		elem_mul(const Mat& rhs) const;
+
+		/// @brief performs element-wise division of matrices
+		/// (elems in this are the numertators).
+		inline Mat
+		elem_div(const Mat& rhs) const;
 
 		/// @brief returns a pair of (element, index) that
 		/// are the minimum on selected column or row.
@@ -221,7 +264,7 @@ namespace afl {
 		inline ElType
 		linf_norm() const;
 
-private:
+	private:
 		/// solves general systems of equations
 		inline bool
 		solve_general(const Mat<ElType, rows, 1>& rhs,
@@ -243,4 +286,7 @@ private:
 } /* namespace afl */
 
 #include "mat-inl.hpp"
+#include "mat-decomp.hpp"
+#include "mat-functions.hpp"
+
 #endif /* MAT_HPP_ */
