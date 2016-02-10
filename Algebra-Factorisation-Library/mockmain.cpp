@@ -5,7 +5,9 @@
 
 #include "include/mat.hpp"
 #include "include/tmp/mapped_range.hpp"
+#include "include/memory/blockstore.hpp"
 
+afl::mem::BlockStore<sizeof(afl::Mat<double, 3, 3>), 30, afl::Mat<double, 3, 3>> store;
 
 int main(int argc, char **argv)
 {

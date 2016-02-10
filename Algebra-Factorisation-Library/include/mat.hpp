@@ -95,6 +95,11 @@ namespace afl {
 		/// @brief non-virtual dtor. class not meant to be inherited from!
 		~Mat() {};
 
+		/// TODO template operator() on iteration dir parameter
+		/// and specialise, also treat the rows == 1 or cols == 1
+		/// case specially when iterating along that direction (ie we
+		/// don't need to divide anymore).
+		///
 		/// @brief access based on single index, const version.
 		/// proceeds alog matrix by first iteration along direction
 		/// specified in iteration dir enum. (i.e. if dir == IterationDir::COLS
