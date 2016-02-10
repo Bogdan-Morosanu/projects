@@ -31,6 +31,28 @@ namespace afl {
 		}
 	}
 
+    template<typename ElType, int rows, int cols>
+    inline Mat<ElType, rows, cols>::
+    Mat(const std::initializer_list<ElType>& ls, IterationDir dir)
+    {
+        assert(ls.size() == rows * cols && "initializer list to matrix size mismatch!");
+        auto it = ls.begin();
+        if (dir == IterationDir::COLS) {
+            for (int r = 0; r < rows; ++r) {
+                for (int c = 0; c < cols; ++c) {
+                    (*this)(r, c) = *it++;
+                }
+            }
+
+        } else {
+            for (int c = 0; c < cols; ++c) {
+                for (int r = 0; r < rows; ++r) {
+                    (*this)(r, c) = *it++;
+                }
+            }
+        }
+    }
+
 	template<typename ElType, int rows, int cols>
 	inline ElType
 	Mat<ElType, rows, cols>::

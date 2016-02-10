@@ -7,19 +7,33 @@
 #include "include/tmp/mapped_range.hpp"
 #include "include/memory/blockstore.hpp"
 
-afl::mem::BlockStore<sizeof(afl::Mat<double, 3, 3>), 30, afl::Mat<double, 3, 3>> store;
+typedef afl::Mat<double, 3, 3> Mat3x3d;
+afl::mem::BlockStore<sizeof(Mat3x3d), 30, Mat3x3d> store;
 
 int main(int argc, char **argv)
 {
+    afl::Mat<double, 3, 3> *ptr = static_cast<Mat3x3d*>(store.malloc());
+	auto& m = *new(ptr) Mat3x3d(0);
+	//auto m = Mat3x3d(0);
 
-	auto m = afl::Mat<double, 3, 3>(0);
-	auto l = m, u = m, p = m;
+	Mat3x3d *lp, *up, *pp;
+	lp = (Mat3x3d*) (store.malloc());
+	up = (Mat3x3d*) (store.malloc());
+	store.free(lp);
+	store.free(up);
+	pp = (Mat3x3d*) (store.malloc());
+	lp = (Mat3x3d*) (store.malloc());
+	up = (Mat3x3d*) (store.malloc());
 
-	double buf[] = {    0.5797200,   0.8562388,   0.6963766,
-						0.7862408,   0.0091269,   0.8417164,
-						0.1307007,   0.8219878,   0.5528331, };
+	auto l = *new(lp)Mat3x3d(m);
+	auto u = *new(up)Mat3x3d(m);
+	auto p = *new(pp)Mat3x3d(m);
 
-	std::memcpy(&m(0,0), buf, sizeof(buf));
+	m = Mat3x3d {   0.5797200,   0.8562388,   0.6963766,
+				    0.7862408,   0.0091269,   0.8417164,
+					0.1307007,   0.8219878,   0.5528331, };
+
+	///std::memcpy(&m(0,0), buf, sizeof(buf));
 
 	m.lup_decomp(l, u, p);
 	afl::Mat<double, 3, 1> target(1);
@@ -47,6 +61,8 @@ int main(int argc, char **argv)
 	std::cout << m.l1_norm() << " "
 	        << m.l2_norm() << " "
 	        << m.linf_norm() << std::endl;
+
+	store.free(ptr);
 
 	return 0;
 }

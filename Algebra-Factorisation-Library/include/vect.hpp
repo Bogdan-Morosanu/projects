@@ -16,11 +16,25 @@ namespace afl {
     template <typename ElType, int dim>
     class Vect final : public Mat<ElType, dim, 1> {
     public:
-        Vect () {}
+        Vect (ElType val)
+            : Mat<ElType, dim, 1>(val) {}
 
-        Vect project(const Vect& rhs) const;
+        Vect (const std::initializer_list<ElType>& ls)
+            : Mat<ElType, dim,1 >(ls) {}
 
-        Vect normalized() const;
+        /// @brief returns projection of *this on rhs.
+        inline Vect
+        projected(const Vect& rhs) const;
+
+        /// @brief returns vector of length one,
+        /// pointing in same direction as *this
+        inline Vect
+        normalized() const;
+
+        /// @brief returns component of *this which is
+        /// orthogonal to axis given.
+        inline Vect
+        orthogonalized(const Vect& axis) const;
 
         /// TODO decide if virtual dtor is needed ?
         virtual ~Vect () {}

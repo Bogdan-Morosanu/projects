@@ -32,7 +32,7 @@ namespace afl {
                 void *retval;
                 // if available, store pointer from top and return top.
                 if (this->available > 0) {
-                    void *nxt = this->data + (*reinterpret_cast<std::size_t*>(this->top));
+                    void *nxt = *reinterpret_cast<void**>(this->top);
                     retval = this->top;
                     this->top = nxt;
                     this->available--;
@@ -56,11 +56,11 @@ namespace afl {
         {
             if (this->available > 0) {
                 // top is a valid reference
-                *(reinterpret_cast<std::size_t*>(vp)) = reinterpret_cast<char*>(top) - data;
+                *(reinterpret_cast<void**>(vp)) = top;
                 top = vp;
 
             } else {
-                *(reinterpret_cast<std::size_t*>(vp)) = reinterpret_cast<char*>(vp) + BlockStore::BLOCK_SIZE;
+                *(reinterpret_cast<void**>(vp)) = (static_cast<char*>(vp) + BlockStore::BLOCK_SIZE);
                 top = vp;
 
             }

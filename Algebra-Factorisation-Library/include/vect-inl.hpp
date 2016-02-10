@@ -12,6 +12,7 @@
 
 namespace afl {
     template <typename ElType, int dim>
+    inline
     Vect<ElType, dim> Vect<ElType, dim>::
     normalized() const
     {
@@ -19,12 +20,24 @@ namespace afl {
     }
 
     template <typename ElType, int dim>
+    inline
     Vect<ElType, dim> Vect<ElType, dim>::
-    project(const Vect& rhs) const
+    projected(const Vect& rhs) const
+    {   // we can't just do rhs * rhs since that's not
+        // a well formed matrix expression. and we
+        // don't want to do rhs * rhs.transp() for
+        // performance reasons.
+        auto rhs_d_rhs = rhs.elem_mul(rhs).l1_norm();
+        auto rhs_d_this = this->elem_mul(rhs).l1_norm();
+        return (rhs_d_this / rhs_d_rhs) * rhs;
+    }
+
+    template <typename ElType, int dim>
+    inline
+    Vect<ElType, dim> Vect<ElType, dim>::
+    orthogonalized(const Vect& axis) const
     {
-        auto proj_dir = rhs.normalized();
-        auto proj_len = this->elem_mul(proj_dir);
-        return proj_len * proj_dir;
+        return (*this) - this->projected(axis);
     }
 }
 

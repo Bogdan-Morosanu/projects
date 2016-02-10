@@ -92,6 +92,13 @@ namespace afl {
 		/// @param val initial value.
 		inline Mat(const ElType& val);
 
+		/// @brief initialises mat to elems in list
+		/// @invariant ls.size() == rows * cols;
+		/// @param dir if == IterationDir::COLS will first fill in
+		///            columns of matrix one at a time.
+		inline Mat(const std::initializer_list<ElType>& ls,
+		           IterationDir dir = IterationDir::COLS);
+
 		/// @brief non-virtual dtor. class not meant to be inherited from!
 		~Mat() {};
 

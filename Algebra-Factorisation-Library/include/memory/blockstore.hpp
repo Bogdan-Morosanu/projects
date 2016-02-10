@@ -46,9 +46,10 @@ namespace afl {
             /// @brief next block address
             void *top;
 
-            static const std::size_t MAX_BLOCKS;
+            static const std::size_t BLOCK_SIZE = (BlockSizeHint > sizeof(void**)) ?
+                                                                     BlockSizeHint : sizeof(void**);
 
-            static const std::size_t BLOCK_SIZE = std::max(BlockSizeHint, sizeof(std::size_t));
+            static const std::size_t MAX_BLOCKS = Capacity;
 
             alignas(alignof(AlignType)) char data[BLOCK_SIZE * Capacity];
         };
