@@ -99,8 +99,8 @@ template<int K>
 class KernExpression : public Expression<K> {
 public:
   KernExpression(const KernFunction<K>& kfn,
-       const FeatVec<K>& mean,
-       const CovMat<K>& covar):
+		 const FeatVec<K>& mean,
+		 const CovMat<K>& covar):
     kern(kfn, mean, covar) {}
 
   // avoid implicit conversions from kernels to expressions

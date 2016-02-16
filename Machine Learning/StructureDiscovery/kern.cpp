@@ -22,7 +22,7 @@ int main() {
   // let's just output in a csv our kernels over 2D surfaces
   CovMat<2> eye;
   eye << 1, 0, 
-         0, 1;
+    0, 1;
   
   FeatVec<2> mean;
   mean << 2, 2;
@@ -214,8 +214,8 @@ KernFunction<K> rq_generator(const std::vector<double>& params) {
 void simple_test() {
   CovMat<3> eye;
   eye << 1, 0, 0,
-         0, 1, 0,
-         0, 0, 1;
+    0, 1, 0,
+    0, 0, 1;
 
   FeatVec<3> zero;
   zero << 0, 0, 0;
@@ -233,11 +233,11 @@ void simple_test() {
 
 
 void kern_only_test() {
-   // for a simple second test
+  // for a simple second test
   // let's just output in a csv our kernels over 2D surfaces
   CovMat<2> eye;
   eye << 1, 0, 
-         0, 1;
+    0, 1;
   
   FeatVec<2> mean;
   mean << 2, 2;
