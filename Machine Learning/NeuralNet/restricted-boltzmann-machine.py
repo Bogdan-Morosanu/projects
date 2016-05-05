@@ -30,12 +30,12 @@ class RBM:
     def sample_hidden(self, x):
         "Get a sample hidden layer column vector from visible column vector x"
         bool_act = self.activate_hidden(x) > np.mat(np.random.uniform(0, 1, len(self.hd_bias))).T
-        return np.mat([0 if x else 1 for x in bool_act]).T
+        return np.mat([1 if x else 0 for x in bool_act]).T
         
     def sample_visible(self, h):
         "Get a sample visible column vector from given hidden column vector h"
         bool_act = self.activate_visible(h) > np.mat(np.random.uniform(0, 1, len(self.in_bias))).T
-        return np.mat([0 if x else 1 for x in bool_act]).T
+        return np.mat([1 if x else 0 for x in bool_act]).T
 
     def update(self, x):
         "Implements constrastive divergence from training sample x"
