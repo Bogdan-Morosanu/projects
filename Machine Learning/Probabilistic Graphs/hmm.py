@@ -33,7 +33,7 @@ class HMM:
     def viterbi(self, obs):
         # first init DP table
         V = [{}]
-        for z in states:
+        for z in self.states:
             V[0][z] = self.start_prob[z] * self.ems_prob[z][obs[0]]
             
         # now propagate fwd in time
